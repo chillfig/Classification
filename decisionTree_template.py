@@ -88,9 +88,26 @@ def stopCriteria(dataSet):
         if satisfying stop criteria, assignedLabel is the assigned class label;
         else, assignedLabel is None 
     '''
-    assignedLabel = None
-    # TODO
+    assignedLabel = None 
+    classLabels = dict()
+    
+    # populate dictionary with class labels
+    for record in dataSet:
+        try: 
+            label = record[(len(record) - 1)]
+        except Exception as exceptionMsg:
+            print('Couldn\'t parse first record', exceptionMsg)
+        if label in classLabels:
+            classLabels[label] += 1
+        else:
+            classLabels[label] = 1
 
+    # assign the stopping criteria assignedLabel
+    if len(classLabels) == 1:
+        assignedLabel = label
+    else:
+        assignedLabel = max(classLabels.keys())
+    # TODO
     return assignedLabel
 
 
