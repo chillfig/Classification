@@ -65,8 +65,20 @@ def chooseBestFeature(dataSet):
     bestFeatId: int
         index of the best feature
     '''
-    #TODO
 
+    for featureIndex in range(len(dataSet[0]) - 1):
+        featureDict = dict()
+        for record in dataSet:
+            feature = (record[featureIndex], record[len(record) - 1])   # feature, class label
+            if feature in featureDict:
+                featureDict[feature] += 1
+                # featureDict[feature] = [record[len(record) - 1], featureDict[feature][1] + 1]
+            else:
+                featureDict[feature] = 1
+                # featureDict[feature] = [record[len(record) - 1], 1]
+        # calculate gini index
+        print(record)
+    #TODO
     return bestFeatId  
 
 
@@ -105,7 +117,7 @@ def stopCriteria(dataSet):
     # assign the stopping criteria assignedLabel
     if len(classLabels) == 1:
         assignedLabel = label
-    else:
+    elif len(record) < 2:
         assignedLabel = max(classLabels.keys())
     # TODO
     return assignedLabel
