@@ -65,19 +65,60 @@ def chooseBestFeature(dataSet):
     bestFeatId: int
         index of the best feature
     '''
+    gain = []
+    # for featureIndex in range(len(dataSet[0]) - 1):
+    #     parentDict = dict()
+    #     for record in dataSet:
+    #         feature = (record[featureIndex], record[len(record) - 1])   # feature, class label
+    #         if feature in parentDict:
+    #             parentDict[feature] += 1
+    #             # parentDict[feature] = [record[len(record) - 1], parentDict[feature][1] + 1]
+    #         else:
+    #             parentDict[feature] = 1
+    #             # parentDict[feature] = [record[len(record) - 1], 1]
+    #     # calculate gini index
+    #     print(record)
 
     for featureIndex in range(len(dataSet[0]) - 1):
-        featureDict = dict()
+        parentDict = dict()                 # dict of parent node labels
+        childrenDict = dict()               # dict of parent node labels  
+        childrenGiniSum = 0                 # rhs of Gain formula
+        valueList = []                      # list of values for an attribute of a record
+        
         for record in dataSet:
-            feature = (record[featureIndex], record[len(record) - 1])   # feature, class label
-            if feature in featureDict:
-                featureDict[feature] += 1
-                # featureDict[feature] = [record[len(record) - 1], featureDict[feature][1] + 1]
+            label = record[len(record) - 1]  # class label
+            value = record[featureIndex]
+            if label in parentDict:
+                parentDict[label] += 1
             else:
-                featureDict[feature] = 1
-                # featureDict[feature] = [record[len(record) - 1], 1]
-        # calculate gini index
-        print(record)
+                parentDict[label] = 1
+            if value not in valueList:
+                valueList.append(value)
+        # calculate parent gini index
+        parentGiniIndex = 1
+        for freq in parentDict.values():
+            parentGiniIndex -= (freq / len(dataSet))**2
+        for value in valueList:
+            subset = splitData(dataSet, featureIndex, value)
+            childrenDict.clear()
+            for record in subset:
+                label = record[len(record) - 1]
+                if label in childrenDict:
+                    childrenDict[label] += 1
+                else:
+                    childrenDict[label] = 1
+            childrenGiniIndex = 1
+            for freq in childrenDict.values():
+                childrenGiniIndex -= (freq / len(subset))**2
+            childrenGiniSum += ((len(subset) / len(dataSet)) *  childrenGiniIndex)
+        gain.append(parentGiniIndex - childrenGiniSum)
+
+    minTarget = gain[0]
+    bestFeatId = 0
+    for index in range(len(gain)):
+        if gain[index] < minTarget:
+            minTarget = gain[index]
+            bestFeatId = index
     #TODO
     return bestFeatId  
 
@@ -117,7 +158,7 @@ def stopCriteria(dataSet):
     # assign the stopping criteria assignedLabel
     if len(classLabels) == 1:
         assignedLabel = label
-    elif len(record) < 2:
+    elif len(record) == 1:
         assignedLabel = max(classLabels.keys())
     # TODO
     return assignedLabel
