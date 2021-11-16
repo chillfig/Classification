@@ -1,5 +1,6 @@
 
 import treeplot
+import pydot
 
 def loadDataSet(filepath):
     '''
@@ -66,18 +67,6 @@ def chooseBestFeature(dataSet):
         index of the best feature
     '''
     gain = []
-    # for featureIndex in range(len(dataSet[0]) - 1):
-    #     parentDict = dict()
-    #     for record in dataSet:
-    #         feature = (record[featureIndex], record[len(record) - 1])   # feature, class label
-    #         if feature in parentDict:
-    #             parentDict[feature] += 1
-    #             # parentDict[feature] = [record[len(record) - 1], parentDict[feature][1] + 1]
-    #         else:
-    #             parentDict[feature] = 1
-    #             # parentDict[feature] = [record[len(record) - 1], 1]
-    #     # calculate gini index
-    #     print(record)
 
     for featureIndex in range(len(dataSet[0]) - 1):
         parentDict = dict()                 # dict of parent node labels
@@ -113,12 +102,7 @@ def chooseBestFeature(dataSet):
             childrenGiniSum += ((len(subset) / len(dataSet)) *  childrenGiniIndex)
         gain.append(parentGiniIndex - childrenGiniSum)
 
-    minTarget = gain[0]
-    bestFeatId = 0
-    for index in range(len(gain)):
-        if gain[index] < minTarget:
-            minTarget = gain[index]
-            bestFeatId = index
+    bestFeatId = gain.index(max(gain))
     #TODO
     return bestFeatId  
 
@@ -201,6 +185,27 @@ def buildTree(dataSet, featNames):
 if __name__ == "__main__":
     data, featNames = loadDataSet('golf.csv')
     dtTree = buildTree(data, featNames)
-    # print (dtTree) 
-    treeplot.createPlot(dtTree)
+    #print (dtTree) 
+    #treeplot.plot(dtTree)
+    #treeplot.createPlot(dtTree)
     
+    def draw(parent_name, child_name):
+        edge = pydot.Edge(parent_name, child_name)
+        graph.add_edge(edge)
+
+    def visit(node, parent=None):
+        for k,v in node.items():
+            if isinstance(v, dict):
+                # We start with the root node whose parent is None
+                # we don't want to graph the None node
+                if parent:
+                    draw(parent, k)
+                visit(v, k)
+            else:
+                draw(parent, k)
+                # drawing the label using a distinct name
+                draw(k, k+'_'+v)
+
+    graph = pydot.Dot(graph_type='graph')
+    visit(dtTree)
+    graph.write('golfgraph.png')
