@@ -68,37 +68,42 @@ def chooseBestFeature(dataSet):
     '''
     gain = []
 
+    def gini_index(input_dict, data_list):
+        result = 1
+        for freq in input_dict.values():
+            result -= (freq / len(data_list))**2
+        return result
+
+    def classDict(recordList):
+        result = dict()
+        for record in recordList:
+            label = record[len(record) - 1]  # class label
+            if label in result:
+                result[label] += 1
+            else:
+                result[label] = 1
+        return result
+
     for featureIndex in range(len(dataSet[0]) - 1):
         parentDict = dict()                 # dict of parent node labels
         childrenDict = dict()               # dict of parent node labels  
         childrenGiniSum = 0                 # rhs of Gain formula
         valueList = []                      # list of values for an attribute of a record
-        
+        # create parent dictionary
+        parentDict = classDict(dataSet)
         for record in dataSet:
-            label = record[len(record) - 1]  # class label
             value = record[featureIndex]
-            if label in parentDict:
-                parentDict[label] += 1
-            else:
-                parentDict[label] = 1
             if value not in valueList:
                 valueList.append(value)
         # calculate parent gini index
-        parentGiniIndex = 1
-        for freq in parentDict.values():
-            parentGiniIndex -= (freq / len(dataSet))**2
+        parentGiniIndex = gini_index(parentDict, dataSet)
         for value in valueList:
             subset = splitData(dataSet, featureIndex, value)
             childrenDict.clear()
-            for record in subset:
-                label = record[len(record) - 1]
-                if label in childrenDict:
-                    childrenDict[label] += 1
-                else:
-                    childrenDict[label] = 1
-            childrenGiniIndex = 1
-            for freq in childrenDict.values():
-                childrenGiniIndex -= (freq / len(subset))**2
+            # create children dictionary
+            childrenDict = classDict(subset)
+            # calculate children gini index
+            childrenGiniIndex = gini_index(childrenDict, subset)
             childrenGiniSum += ((len(subset) / len(dataSet)) *  childrenGiniIndex)
         gain.append(parentGiniIndex - childrenGiniSum)
 
@@ -137,7 +142,7 @@ def stopCriteria(dataSet):
         if label in classLabels:
             classLabels[label] += 1
         else:
-            classLabels[label] = 1
+            classLabels[label] = 2
 
     # assign the stopping criteria assignedLabel
     if len(classLabels) == 1:
@@ -185,27 +190,4 @@ def buildTree(dataSet, featNames):
 if __name__ == "__main__":
     data, featNames = loadDataSet('golf.csv')
     dtTree = buildTree(data, featNames)
-    #print (dtTree) 
-    #treeplot.plot(dtTree)
-    #treeplot.createPlot(dtTree)
-    
-    def draw(parent_name, child_name):
-        edge = pydot.Edge(parent_name, child_name)
-        graph.add_edge(edge)
-
-    def visit(node, parent=None):
-        for k,v in node.items():
-            if isinstance(v, dict):
-                # We start with the root node whose parent is None
-                # we don't want to graph the None node
-                if parent:
-                    draw(parent, k)
-                visit(v, k)
-            else:
-                draw(parent, k)
-                # drawing the label using a distinct name
-                draw(k, k+'_'+v)
-
-    graph = pydot.Dot(graph_type='graph')
-    visit(dtTree)
-    graph.write('golfgraph.png')
+    print (dtTree) 
