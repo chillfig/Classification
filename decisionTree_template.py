@@ -86,7 +86,7 @@ def chooseBestFeature(dataSet):
 
     for featureIndex in range(len(dataSet[0]) - 1):
         parentDict = dict()                 # dict of parent node labels
-        childrenDict = dict()               # dict of child node labels  
+        childrenDict = dict()               # dict of child node labels
         childrenGiniSum = 0                 # rhs of Gain formula
         valueList = []                      # list of values for an attribute of a record
         # create parent dictionary
